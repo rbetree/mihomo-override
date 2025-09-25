@@ -15,12 +15,10 @@
 
 ## 🚀 快速上手
 
-1.  **获取脚本**: 将 `mihomo.js` 文件中的所有代码复制。
-2.  **配置覆写**:
-    - 在支持 JavaScript 覆写的 Clash 客户端 (如 a-shell) 中，进入“覆写”或“预处理”设置。
-    - 创建一个新的 JavaScript 覆写，将代码粘贴进去并保存。
-3.  **应用覆写**: 在您的订阅配置上，启用刚刚创建的覆写脚本。
-4.  **刷新订阅**: 更新您的订阅，新的配置将自动生成并生效。
+1.  **获取脚本**: 
+    - 将 `mihomo.js` 文件中的所有代码复制
+    - 使用[URL](https://raw.githubusercontent.com/rbetree/mihomo-override/refs/heads/main/mihomo.js)导入
+2.  创建一个新的 JavaScript 覆写，将脚本导入
 
 ## 🔧 自定义指南
 
