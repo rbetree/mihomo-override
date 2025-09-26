@@ -60,7 +60,7 @@ const GROUP_ICONS = {
     // "OneDrive": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/OneDrive.png",
     "Microsoft": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Microsoft.png",
     "Steam": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Steam.png",
-    "Google": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Google.png",
+    "Google": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Google_Search.png",
 };
 
 
@@ -162,7 +162,8 @@ const PROXY_RULES = [
             "DOMAIN-SUFFIX,iyf.lv",
             "DOMAIN-SUFFIX,cycity.pro",
             "DOMAIN-SUFFIX,cycani.org",
-            "IP-CIDR,223.113.52.0/22,no-resolve"
+            "IP-CIDR,223.113.52.0/22,no-resolve",
+            "DOMAIN-SUFFIX,rzlnb.top"
         ]
     },
     {
@@ -820,12 +821,13 @@ function buildBaseProxyGroups(testUrl, cheapProxies, allFilteredProxyNames) {
     const autoSelectGroupNames = [];
 
     // 1. 创建 “1倍便宜货” 分组
-    if (cheapProxies.length > 0) {
+    const nonHkCheapProxies = cheapProxies.filter(p => !/HK|Hong Kong|香港|港/i.test(p));
+    if (nonHkCheapProxies.length > 0) {
         const groupName = '1倍便宜货';
         utilityGroups.push({
             name: groupName,
             type: 'url-test',
-            proxies: cheapProxies,
+            proxies: nonHkCheapProxies,
             url: testUrl,
             interval: CONFIG.testInterval,
             tolerance: CONFIG.tolerance,
