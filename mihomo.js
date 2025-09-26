@@ -56,6 +56,7 @@ const GROUP_ICONS = {
     "AIGC": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Bot.png",
     "媒体": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/ForeignMedia.png",
     "社交": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png",
+    "腾讯": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/WeChat.png",
     "开发": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/GitHub.png",
     // "OneDrive": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/OneDrive.png",
     "Microsoft": "https://testingcf.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Microsoft.png",
@@ -138,7 +139,6 @@ const SAVED_RULES = [
  * 注意：越具体的规则应该放在越前面，避免被通用规则覆盖
  */
 const PROXY_RULES = [
-    // 顺序已按用户要求重新排列
     {
         name: "自定义代理", 
         preferProxy: true,
@@ -233,6 +233,14 @@ const PROXY_RULES = [
             "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Twitter/Twitter_No_Resolve.yaml",
             "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Facebook/Facebook_No_Resolve.yaml",
             "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Telegram/Telegram_No_Resolve.yaml"
+        ]
+    },
+    {
+        name: "腾讯",
+        preferProxy: false,
+        urls: [
+            "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/WeChat/WeChat.yaml",
+            "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/Tencent/Tencent.yaml"
         ]
     },
     {
