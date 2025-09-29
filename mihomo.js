@@ -213,8 +213,7 @@ const PROXY_RULES = [
             "DOMAIN-SUFFIX,stability.ai",
             "DOMAIN-SUFFIX,leonardo.ai",
             "DOMAIN-SUFFIX,civitai.com"
-        ],
-        defaultProxy: "US AUTO"
+        ]
     },
     {
         name: "媒体", 
@@ -236,19 +235,19 @@ const PROXY_RULES = [
         ]
     },
     {
-        name: "腾讯",
-        preferProxy: false,
-        urls: [
-            "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/WeChat/WeChat.yaml",
-            "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/Tencent/Tencent.yaml"
-        ]
-    },
-    {
         name: "开发",
         preferProxy: true,
         urls: [
             "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/GitHub/GitHub.yaml",
             "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Cloudflare/Cloudflare_No_Resolve.yaml"
+        ]
+    },
+    {
+        name: "腾讯",
+        preferProxy: false,
+        urls: [
+            "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/WeChat/WeChat.yaml",
+            "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/Tencent/Tencent.yaml"
         ]
     },
     { 
@@ -261,11 +260,10 @@ const PROXY_RULES = [
         preferProxy: false, 
         urls: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Microsoft/Microsoft_No_Resolve.yaml" 
     },
-    { 
-        name: "Steam", 
-        preferProxy: false, 
-        urls: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/Steam/Steam_No_Resolve.yaml",
-        defaultProxy: "1倍便宜货"
+    {
+        name: "Steam",
+        preferProxy: true,
+        urls: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/Steam/Steam_No_Resolve.yaml"
     },
     { 
         name: "广告拦截", 
