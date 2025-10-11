@@ -98,6 +98,8 @@ const EXCLUDE_KEYWORDS = [
 
 
 const SAVED_RULES = [
+    // 优先直连局域网与多播网段，避免局域网互联应用失效
+    "RULE-SET,lancidr,DIRECT,no-resolve",
     "RULE-SET,cncidr,DIRECT,no-resolve",
     "RULE-SET,direct,DIRECT",
     "GEOSITE,gfw,代理-被墙网站",
@@ -304,10 +306,15 @@ const DNS_CONFIG = {
     
     // DNS隐私保护过滤器
     fakeIpFilter: [
-        "+.lan", "+.local",
-        // Windows网络连接检测
+        // 局域网与本地域名，避免 fake-ip 影响 LAN 直连/发现
+        "+.lan", "+.local", "+.home.arpa",
+        // 常见家庭路由器/网关域名（设备面板、服务发现等）
+        "router.asus.com", "+.miwifi.com", "fritz.box", "my.router",
+        "routerlogin.net", "tplogin.cn", "tplinkwifi.net",
+
+        // Windows 网络连通性检测域名（保持真实解析以免误判联网状态）
         "+.msftconnecttest.com", "+.msftncsi.com",
-        // QQ/微信快速登录检测
+        // QQ/微信快速登录检测域名（保持本地直连行为一致）
         "localhost.ptlogin2.qq.com", "localhost.sec.qq.com",
         "localhost.work.weixin.qq.com",
     ],
@@ -669,9 +676,6 @@ function filterValidProxies(proxies) {
     return validProxies;
 }
 
-
-// 已移除：filterBillingRateProxies 函数，现在直接在 main 函数中统一处理
-
 /**
  * 主函数：生成完整的Clash配置
  * @param {Object} config - 输入配置
@@ -739,6 +743,12 @@ function main(config) {
             behavior: "domain",
             url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt",
             path: "./ruleset/loyalsoldier/reject.yaml"
+        },
+        lancidr: {
+            ...ruleProviderCommon,
+            behavior: "ipcidr",
+            url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt",
+            path: "./ruleset/loyalsoldier/lancidr.yaml"
         },
         cncidr: {
             ...ruleProviderCommon,
