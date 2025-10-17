@@ -2,7 +2,7 @@
  * mihomo 代理配置覆写脚本
  *
  * 脚本订阅地址:
- * https://raw.githubusercontent.com/rbetree/mihomo-override/refs/heads/main/mihomo.js
+ * https://raw.githubusercontent.com/rbetree/mihomo-override/refs/heads/main/mihomo-dns.js
  * 
  * 自动读取订阅节点，并生成一套包含智能分流、自动测速和丰富自定义选项的全新配置。
  *
@@ -28,6 +28,8 @@
  * - 基础配置:
  *   - `GROUP_ICONS`: 自定义各分组的图标。
  *   - `CONFIG`: 配置测试URL、延迟等基础参数。
+ *   - `DNS_CONFIG`: 自定义DNS服务器。
+ *
  */
 
 // ==================== 用户配置区（可自由修改） ====================
@@ -276,6 +278,88 @@ const PROXY_RULES = [
     },
 ];
 
+/**
+ * DNS 配置
+ * 可根据需要修改DNS服务器
+ * 
+ * DNS选择策略：
+ * 1. 国内直连服务 → 使用国内DNS，避免污染
+ * 2. 被墙服务 → 使用国外DNS，确保正确解析  
+ * 3. 通用国外服务 → 使用fallback机制，智能选择
+ * 
+ * 重要：DNS配置应与代理规则保持一致，避免DNS泄露
+ */
+const DNS_CONFIG = {
+    // 国际可信DNS (加密)
+    trustDnsList: [
+        "tls://8.8.8.8", "tls://1.1.1.1", "tls://9.9.9.9",
+        "https://8.8.8.8/dns-query", "https://1.1.1.1/dns-query"
+    ],
+    
+    // 默认DNS (用于解析域名服务器，必须为IP，可加密)
+    defaultDNS: ["tls://1.12.12.12", "tls://223.5.5.5"],
+    
+    // 中国大陆DNS服务器
+    cnDnsList: [
+        '119.29.29.29',                    // Tencent Dnspod
+        '223.5.5.5',                       // Ali DNS
+        '1.12.12.12',                      // China Telecom
+        "114.114.114.114",
+    ],
+    
+    // DNS隐私保护过滤器
+    fakeIpFilter: [
+        // 局域网与本地域名，避免 fake-ip 影响 LAN 直连/发现
+        "+.lan", "+.local", "+.home.arpa",
+        // 常见家庭路由器/网关域名（设备面板、服务发现等）
+        "router.asus.com", "+.miwifi.com", "fritz.box", "my.router",
+        "routerlogin.net", "tplogin.cn", "tplinkwifi.net",
+
+        // Windows 网络连通性检测域名（保持真实解析以免误判联网状态）
+        "+.msftconnecttest.com", "+.msftncsi.com",
+        // QQ/微信快速登录检测域名（保持本地直连行为一致）
+        "localhost.ptlogin2.qq.com", "localhost.sec.qq.com",
+        "localhost.work.weixin.qq.com",
+    ],
+    
+    // 指定域名使用的DNS服务器
+    // 格式: "域名或geosite": DNS服务器
+    // 注意：确保DNS选择与代理规则匹配，避免DNS泄露
+    nameserverPolicy: {
+        "geosite:private": "system",
+        // 国内服务使用国内DNS（与DIRECT代理规则匹配）
+        "geosite:cn,steam@cn,category-games@cn": 'cnDnsList',
+        // Microsoft和Apple服务：根据代理规则，如果走DIRECT则使用国内DNS
+        "microsoft@cn,apple@cn": 'cnDnsList'
+    },
+    
+    // 需要指定使用国外DNS的域名
+    fallbackDomains: [
+        "+.azure.com", "+.bing.com", "+.bingapis.com",
+        "+.cloudflare.net", "+.docker.com", "+.docker.io",
+        "+.facebook.com", "+.github.com", "+.githubusercontent.com",
+        "+.google.com", "+.gstatic.com", "+.google.dev",
+        "+.googleapis.cn", "+.googleapis.com", "+.googlevideo.com",
+        "+.instagram.com", "+.meta.ai", "+.microsoft.com",
+        "+.microsoftapp.net", "+.msn.com", "+.openai.com",
+        "+.poe.com", "+.t.me", "+.twitter.com",
+        "+.x.com", "+.youtube.com",
+        // {{ Change: Add - 增加更多AI服务域名，防止DNS泄漏暴露真实位置 }}
+        "+.anthropic.com", "+.claude.ai", "+.chatgpt.com",
+        "+.gemini.google.com", "+.bard.google.com", "+.ai.google.dev",
+        "+.perplexity.ai", "+.character.ai", "+.janitor.ai",
+        "+.huggingface.co", "+.replicate.com", "+.runpod.io",
+        "+.together.ai", "+.fireworks.ai", "+.deepseek.com",
+        "+.moonshot.cn", "+.kimi.moonshot.cn",
+        // {{ Change: Add - 添加AI代码工具域名，防止DNS泄漏被检测 }}
+        "+.cursor.com", "+.cursor.sh", "+.cursor-cdn.com", "+.cursorapi.com",
+        "+.windsurf.com", "+.codeium.com", "+.augmentcode.com",
+        "+.trae.ai", "+.byteoversea.com", "+.starling.zijieapi.com",
+        "+.midjourney.com", "+.discord.com", "+.stability.ai",
+        "+.leonardo.ai", "+.civitai.com"
+    ]
+};
+
 // ==================== 系统实现区（一般不需要修改） ====================
 
 
@@ -342,7 +426,55 @@ const VALID_PROXY_REGEX = (() => {
 // 计费倍数匹配正则（匹配格式如【3x】），未匹配的节点默认按1倍计费
 const BILLING_RATE_REGEX = /【(\d+)x】/;
 
+// 构建DNS配置对象
+const dns = buildDnsConfig(DNS_CONFIG);
+
 // ==================== 辅助函数部分 ====================
+
+/**
+ * 构建DNS配置对象
+ * @param {Object} config - DNS配置参数
+ * @returns {Object} 完整的DNS配置对象
+ */
+function buildDnsConfig(config) {
+    // 错误处理：验证输入参数
+    if (!config || typeof config !== 'object') {
+        throw new Error('DNS配置参数无效');
+    }
+    
+    // 性能优化：缓存数组复制结果
+    const cnDnsListCopy = config.cnDnsList ? [...config.cnDnsList] : [];
+    
+    return {
+        enable: true,
+        listen: ":53",
+        ipv6: true,
+        "prefer-h3": true,
+        "use-hosts": true,
+        "use-system-hosts": true,
+        "respect-rules": true,
+        "enhanced-mode": "fake-ip",
+        "fake-ip-range": "198.18.0.1/16",
+        "fake-ip-filter": config.fakeIpFilter || [],
+        "default-nameserver": config.defaultDNS || [],
+        nameserver: config.trustDnsList || [],
+        "proxy-server-nameserver": cnDnsListCopy,
+        "nameserver-policy": {
+            "geosite:private": "system",
+            // 与上面的nameserverPolicy保持一致
+            "geosite:cn,steam@cn,category-games@cn": cnDnsListCopy,
+            "microsoft@cn,apple@cn": cnDnsListCopy,
+        },
+        fallback: config.trustDnsList || [],
+        "fallback-filter": {
+            geoip: true,
+            "geoip-code": "CN",
+            geosite: ["gfw"],
+            ipcidr: ["240.0.0.0/4"],
+            domain: config.fallbackDomains || []
+        }
+    };
+}
 
 /**
  * 创建规则提供器配置 - 使用对象复用优化性能
@@ -679,6 +811,7 @@ function main(config) {
             mmdb: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/country-lite.mmdb",
             asn: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
         },
+        dns,
         proxies: validProxies, // 使用过滤后的代理列表
         "proxy-groups": [
             ...serviceGroups,       // 第一梯队：应用策略组
